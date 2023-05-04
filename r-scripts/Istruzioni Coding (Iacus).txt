@@ -1,0 +1,17 @@
+## Istruzioni di coding R
+# Principi di Robustezza/Astrazione/Efficienza
+
+- clear workspace e getwd() all'inizio
+- funzioni/moduli con input e output sempre ben definiti (mai variabili locali)
+- testare funzioni con strumenti di controllo (es. codetools)
+- modularizzazione del codice
+- job che girano in modo asincrono
+- lavorare con le options e global.options
+- lavorare con cartelle temporanee
+- funzioni di collegamento (es. openDB e closeDB)
+- applicare funzioni di error handling con sequenzialità (es. try(.f, SILENT = TRUE), safely, ecc)
+- lavorare con version control
+- nel caso di versioni di sviluppo (package dev o package non stabili o non sul cran), scaricarsi il package, fare build e mantenere stabile la versioni di interesse localmente
+- funzioni di alerting/reporting
+- lavorare con subprocess quando necessario
+- tabelle o file di status/log errori con rispettive funzioni di status/log

@@ -1,0 +1,15 @@
+1) short time series models
+2) time series clustering to improve forecasts
+3) how trasform ts data to apply ML? SLiding window?
+4) how tune parameters
+5) detect ts outliers or anomalies
+6) rolling window for calibration
+7) how to handle negative prediction value
+8) missing values
+9) advanced ensembling methods
+10) multivariate forecasting
+11) GluonTS
+12) update trained models as new data comes
+13) multiple seasonality
+14) high frequency data
+15) efficiency

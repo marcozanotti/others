@@ -1,0 +1,91 @@
+
+## APPROCCIO SERVICES & TIMERS
+
+# check stackoverflow @ https://stackoverflow.com/questions/9619362/running-a-cron-every-30-seconds
+
+sudo bash  #root user
+
+cd /etc/systemd/system  #inserire qui i file service e timer
+
+## add a service
+nano /etc/systemd/system/my.service
+
+[Unit]
+Description=My Service
+[Service]
+User=mzanotti
+ExecStart=/my/path/to/myjob.sh                                  
+
+## add a timer every 30 seconds
+nano /etc/systemd/system/my.timer
+
+[Unit]
+Description=Runs My Service every 30 secs
+[Timer]
+OnBootSec=30  #start the service this many seconds after each boot
+OnUnitActiveSec=30  #start the service this many seconds after the last time the service was started
+AccuracySec=1ms  #sets the accuracy of the timer (default to 1 minute)
+[Install]
+WantedBy=timers.target
+
+## add a myjob.sh script to the path containing the job
+nano /my/path/to/myjob.sh
+
+#!/bin/bash  #must start with this command!!!!!
+cd /home/mzanotti
+R CMD BATCH --vanilla --slave myjob.R  #in questo caso lancia uno script R che si chiama myjob.R
+
+
+## use the system manager to start/stop/restart/enable/status of service and timer
+# to start
+systemctl start my.service
+systemctl start my.timer
+
+# to set timer @ boot
+systemctl enable my.timer
+
+# to check the status
+systemctl status my.timer
+
+# to stop
+systemctl stop ...
+
+# to restart
+systemctl restart ...
+
+# if files changed on disk reload units with
+systemctl daemon-reload 
+
+
+
+## APPROCCIO CRONJOB
+
+sudo bash  #root user
+
+crontab
+
+# per vedere il crontab
+crontab -l # l=list
+
+# per modificare il crontab
+crontab -e # e=edit
+
+# cron
+* * * * * /bin/bash -c ' for i in {1..X}; do YOUR_COMMANDS ; sleep Y ; done '
+# If you want to run every N seconds then X will be 60/N and Y will be N.
+
+per UVET: 
+
+* * * * * /bin/bash -c ' for i in {1..2}; do /home/mzanotti/ufleetJob1.sh ; sleep 30 ; done '
+* * * * * /bin/bash -c ' for i in {1..2}; do /home/mzanotti/ufleetJob2img.sh ; sleep 30 ; done '
+* * * * * /bin/bash -c ' for i in {1..2}; do /home/mzanotti/ufleetJob2pec.sh ; sleep 30 ; done '
+* * * * * /bin/bash -c ' for i in {1..2}; do /home/mzanotti/ufleetJob3.sh ; sleep 30 ; done '
+0 * * * * /bin/bash -c ' /home/mzanotti/ufleetJob4.sh '
+
+m h  dom mon dow   command
+*/5 * * * * /bin/bash -c ' /home/mzanotti/ufleetJob1.sh ' # every 5 min
+*/2 * * * * /bin/bash -c ' /home/mzanotti/ufleetJob2img.sh ' # every 2 min
+* * * * * /bin/bash -c ' /home/mzanotti/ufleetJob2pec.sh ' # every min
+*/3 * * * * /bin/bash -c ' /home/mzanotti/ufleetJob3.sh ' # every 3 min
+*/30 * * * * /bin/bash -c ' /home/mzanotti/ufleetJob4.sh ' # every 30 min
+00 13 1,16 * * /bin/bash -c ' /home/mzanotti/ufleetJob5.sh ' # on 1 and 16 day of the month at 13.00

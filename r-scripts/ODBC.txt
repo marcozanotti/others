@@ -1,0 +1,37 @@
+
+# ODBC connection
+apt-get install unixodbc-dev unixodbc-bin unixodbc
+
+#sudo apt-get install -y unixodbc unixodbc-dev unixodbc-bin libodbc1 odbcinst1debian2 tdsodbc php5-odbc
+sudo apt-get install -y freetds-bin freetds-common freetds-dev libct4 libsybdb5
+
+apt install iodbc
+apt-get install tdsodbc
+  
+# per vedere i path di configurazione
+odbcinst -j
+
+# per vedere i driver installati
+odbcinst -q -d
+
+iodbctest "DSN=<dsn_name>;UID=<user_name>;PWD=<password>"
+
+iodbctest "DSN=MSSQL;UID=ocr;PWD=ocr2018!!"
+
+isql -v testodbc2 mary <password>
+
+
+library(DBI)
+con <- dbConnect(odbc::odbc(),
+driver = "FreeTDS",
+database = "OCR_MULTE”,
+uid = "ocr",
+pwd = "ocr2018!!",
+host = "192.168.50.145")
+
+
+
+
+
+
+

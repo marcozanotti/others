@@ -1,0 +1,32 @@
+
+## Update Ubuntu
+
+sudo apt update
+sudo apt upgrade
+sudo apt dist-upgrade
+sudo apt-get autoremove
+sudo apt install update-manager-core
+sudo do-release-upgrade
+
+https://www.zdnet.com/article/how-to-upgrade-from-ubuntu-linux-16-04-to-18-04/
+
+
+## Update R
+
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
+# se non funziona provare a forzare su porta 80
+# sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
+sudo add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran35/'
+sudo apt update
+sudo apt install r-base
+sudo -i R
+
+https://www.digitalocean.com/community/tutorials/how-to-install-r-on-ubuntu-18-04-quickstart
+
+
+## Update RStudio Server
+
+sudo apt-get install gdebi-core
+wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-1.2.1335-amd64.deb
+sudo gdebi rstudio-server-1.2.1335-amd64.deb
+

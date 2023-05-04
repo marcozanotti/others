@@ -1,0 +1,40 @@
+
+# RStudio Server
+
+sudo reboot now
+sudo reboot -f  #to force
+
+
+$ sudo rstudio-server stop
+$ sudo rstudio-server start
+$ sudo rstudio-server restart
+
+$ sudo rstudio-server status
+
+$ sudo rstudio-server active-sessions
+$ sudo rstudio-server suspend-session <pid>
+$ sudo rstudio-server suspend-all
+
+$ sudo rstudio-server force-suspend-session <pid>
+$ sudo rstudio-server force-suspend-all
+
+$ sudo rstudio-server kill-session <pid>
+$ sudo rstudio-server kill-all
+
+$ sudo rstudio-server offline
+$ sudo rstudio-server online
+
+$ sudo rstudio-server verify-installation  
+
+
+
+RStudio.version()
+
+# symlink
+ln -s /home/ggerardi /home/mzanotti/links
+
+
+
+GitHub
+Id: cdg.machine@gmail.com or UvetAnalysis
+Pw: groot!01

@@ -1,0 +1,87 @@
+Fake Names Detection
+========================================================
+author: Marco Zanotti
+date: --/04/2019
+autosize: true
+
+Process Analysis
+========================================================
+
+- processo di acquisto FlyUvet
+
+- valutazione casistiche di inserimento (solo upper case, nome e cognomi separati,
+lunghezza stringhe, ecc)
+
+- dati disponibili (solo nomi o anche tutti gli ancillaries)
+
+- database
+
+- valutazione operatività modello (dove inserire il filtro ed efficiency)
+
+&nbsp;
+
+Data Acquisition
+========================================================
+
+- nomi reali da database pagato
+
+- nomi falsi da database fake?
+
+- explorative data analysis (max/min lengths, spaces, punctuations,
+patterns, ecc) on real and fake strings/names
+
+- analisi provenienza real names
+
+- valutazione sbilanciamento (over-sampling / under-sampling / mixed)
+
+- valutazione download dati anagrafici pubblici
+
+&nbsp;
+
+Synthetic Data Creation
+========================================================
+
+- creazione nomi veri in base alla distribuzione dei dati e ai pattern e non
+
+- creazione nomi falsi (generazione di stringhe casuali in base ai pattern e non)
+
+&nbsp;
+
+Labelling
+========================================================
+
+- etichettatura dei dati
+
+&nbsp;
+
+Modelling
+========================================================
+
+- study unbalanced case
+
+- train (try different models, SVM and Advanced SVM, KNN, Logistic Regression, 
+Bayesian, Tree, Random Forest, XGBoost, Neural Network, extra trees, regularized 
+greedy forest, Decision Jungle)
+
+- cross-validation interna
+
+- cross-validation esterna
+
+- test
+
+- evaluation (accuracy, precision, recall, F1, AUC/ROC, other metrics)
+
+&nbsp;
+
+Reporting
+========================================================
+
+- Shiny web app testing names (input -> nome, output -> TRUE/FALSE + Prob)
+
+&nbsp;
+
+Production
+========================================================
+
+&nbsp;
+

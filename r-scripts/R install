@@ -1,0 +1,5 @@
+
+# Installing R and libcurl on Ubuntu 20 when problems
+sudo apt-get install r-base-dev build-essential 
+sudo apt-get install build-essential libssl-dev libcurl4-openssl-dev libxml2-dev libcairo2-dev libgit2-dev
+

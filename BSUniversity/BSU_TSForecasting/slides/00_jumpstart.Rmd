@@ -1,0 +1,317 @@
+---
+title: "Jumpstart"
+author: "Marco Zanotti"
+date: "10/12/2021"
+output: 
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: true
+      smooth_scroll: true
+    toc_depth: 4
+    number_sections: false
+  theme: lumen
+  highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, 
+  message = FALSE, 
+  warning = FALSE, 
+  error = FALSE
+)
+```
+
+# Packages
+
+#### Data Wrangling & Viz
+
+```{r}
+library(tidyverse)    # Meta - dplyr, ggplot2, purrr, tidyr, stringr, forcats
+library(lubridate)    # date and time
+library(timetk)       # Time series data wrangling, visualization and preprocessing
+library(DataExplorer) # Data Viz
+library(fs)           # Work with files
+```
+
+#### Time Series
+
+```{r}
+library(forecast)     # Auto ARIMA, ETS
+library(prophet)      # FB Prophet
+```
+
+#### Machine Learning
+
+```{r}
+library(glmnet)       # Elastic Net
+library(earth)        # Mars Regression Splines
+library(kernlab)      # Support Vector Machine
+#library(knn)         # K-Nearest Neighbors
+library(randomForest) # Random Forest
+library(ranger)       # Random Forest
+library(xgboost)      # Boosted Trees
+library(Cubist)       # Cubist Rule-Based Algorithm
+```
+
+#### Time Series ML
+
+```{r}
+library(tidymodels)   # Meta - workflows, parsnip, tune, dials, recipes, rsample, yardstick
+library(rules)        # Rule-based models (cubist)
+library(modeltime)    # tidymodels time series extension
+```
+
+#### Deep Learning
+
+```{r}
+library(reticulate)   # Python interface
+```
+
+\
+&nbsp;
+\
+&nbsp;
+
+# Data
+
+![](img/00_data.PNG)  
+
+### Establish Relationships
+
+-   Website traffic (Page Views, Sessions, Organic Traffic)
+-   Top 20 Pages
+
+```{r}
+# Google Analytics - Summary Hourly
+read_rds("data/google_analytics_summary_hourly.rds")
+```
+
+```{r}
+# Google Analytics - Top 20 Pages, Daily
+read_rds("data/google_analytics_by_page_daily.rds")
+```
+
+### Build Relationships
+
+-   Collect emails
+-   Host Events
+
+```{r}
+# Mailchimp Data
+read_rds("data/mailchimp_users.rds")
+```
+
+```{r}
+# Learning Labs
+read_rds("data/learning_labs.rds")
+```
+
+### Generate Course Revenue
+
+-   Revenue data (aggregated at weekly interval)
+-   Product Events
+
+```{r}
+# Transactions Weekly
+read_rds("data/transactions_weekly.rds")
+```
+
+```{r}
+# Product Events
+read_rds("data/product_events.rds")
+```
+
+\
+&nbsp;
+\
+&nbsp;
+
+# Time Series Forecasting
+
+### 1.0 EDA & Data Preparation
+
+```{r}
+mailchimp_users_tbl <- read_rds("data/mailchimp_users.rds")
+mailchimp_users_tbl
+```
+
+```{r}
+mailchimp_users_tbl %>% glimpse()
+```
+
+```{r}
+# Count of Optins by Day
+optins_day_tbl <- mailchimp_users_tbl %>%
+  summarise_by_time(
+    .date_var = optin_time,
+    .by = "day",
+    optins = n()
+  )
+optins_day_tbl
+```
+
+```{r}
+# Summary Diagnostics
+optins_day_tbl %>% 
+  tk_summary_diagnostics(.date_var = optin_time)
+```
+
+```{r}
+# Pad the Time Series
+optins_day_prepared_tbl <- optins_day_tbl %>%
+  pad_by_time(
+    .date_var = optin_time,
+    .by = "day",
+    .pad_value = 0
+  )
+optins_day_prepared_tbl
+```
+
+```{r}
+# Visualization
+optins_day_prepared_tbl %>%
+  plot_time_series(optin_time, optins, .smooth = FALSE)
+```
+
+### 2.0 EVALUATION PERIOD
+
+```{r}
+# Filtering
+evaluation_tbl <- optins_day_prepared_tbl %>%
+  filter_by_time(
+    .date_var = optin_time,
+    .start_date = "2018-11-20",
+    .end_date = "end"
+  )
+evaluation_tbl %>%
+  plot_time_series(optin_time, optins, .smooth = FALSE)
+```
+
+```{r}
+# Train/Test
+splits <- evaluation_tbl %>%
+  time_series_split(
+    date_var = optin_time,
+    assess = "8 week",
+    cumulative = TRUE
+  )
+splits
+```
+
+```{r}
+# Train/Test Visualization
+splits %>%
+  tk_time_series_cv_plan() %>%
+  plot_time_series_cv_plan(optin_time, optins)
+```
+
+### 3.0 Feature Engineering
+
+```{r}
+# Visualizing Features
+evaluation_tbl %>%
+  plot_seasonal_diagnostics(optin_time, log(optins))
+```
+
+```{r}
+training(splits)
+
+# Recipe of Features
+recipe_spec <- recipe(optins ~ ., data = training(splits)) %>%
+  step_timeseries_signature(optin_time) %>%
+  step_rm(
+    ends_with(".iso"),
+    ends_with(".xts"),
+    contains("hour"),
+    contains("minute"),
+    contains("second"),
+    contains("am.pm"),
+    "optin_time"
+  ) %>%
+  step_normalize(ends_with("index.num"), ends_with("_year")) %>%
+  step_dummy(all_nominal())
+recipe_spec %>% prep() %>% juice() %>% glimpse()
+```
+
+### 4.0 Modelling & Forecasting with Modeltime
+
+#### 4.1 Algorithms' Specification
+
+```{r}
+# Prophet Model Spec
+model_fit_prophet <- prophet_reg() %>%
+  set_engine("prophet") %>% 
+  fit(optins ~ optin_time, training(splits))
+
+# LM Model Spec
+model_spec_lm <- linear_reg() %>%
+  set_engine("lm")
+
+# XGBOOST Model Spec
+model_spec_xgb <- boost_tree(
+  mode = "regression",
+  mtry = 25,
+  trees = 1000,
+  min_n = 2,
+  tree_depth = 12,
+  learn_rate = 0.3,
+  loss_reduction = 0
+) %>%
+  set_engine("xgboost")
+```
+
+#### 4.2 Workflows
+
+```{r}
+# LM Workflow
+wkf_fit_lm <- workflow() %>%
+  add_model(model_spec_lm) %>%
+  add_recipe(recipe_spec) %>%
+  fit(training(splits))
+
+# XGBOOST Workflow
+wkf_fit_xgb <- workflow() %>%
+  add_model(model_spec_xgb) %>%
+  add_recipe(recipe_spec) %>%
+  fit(training(splits))
+```
+
+#### 4.3 Modeltime Table
+
+```{r}
+# Create Modeltime Table
+model_tbl <- modeltime_table(
+  model_fit_prophet,
+  wkf_fit_lm,
+  wkf_fit_xgb
+)
+model_tbl
+```
+
+#### 4.4 Calibration
+
+```{r}
+# Calibration
+calibration_tbl <- model_tbl %>%
+  modeltime_calibrate(new_data = testing(splits))
+calibration_tbl
+```
+
+#### 4.5 Forecasting
+
+```{r}
+# Forecasting
+calibration_tbl %>%
+  modeltime_forecast(actual_data = evaluation_tbl) %>% 
+  plot_modeltime_forecast()
+```
+
+#### 4.6 Accuracy
+
+```{r}
+# Accuracy
+calibration_tbl %>%
+  modeltime_accuracy()
+```
