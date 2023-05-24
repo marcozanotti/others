@@ -71,6 +71,7 @@ lm_tidy <- function(
 	# extract lm statistics
 	summary_res <- purrr::map(lm_res, summary)
 	adj_r2 <- purrr::map(summary_res, "adj.r.squared")
+	adj_r2 <- ifelse(adj_r2 < 0, 0, adj_r2)
 	fstat <- purrr::map(summary_res, "fstatistic") |> purrr::map("value")
 	nobs <- purrr::map(summary_res, "df")
 	nobs <- (unlist(purrr::map(nobs, 1)) + unlist(purrr::map(nobs, 2))) |> as.list()
@@ -104,6 +105,7 @@ glm_tidy <- function(
 	dev <- purrr::map(summary_res, "deviance")
 	null_dev <- purrr::map(summary_res, "null.deviance")
 	adj_r2 <- (1 - unlist(purrr::map(dev, 1)) / unlist(purrr::map(null_dev, 1))) |> as.list()
+	adj_r2 <- ifelse(adj_r2 < 0, 0, adj_r2)
 	fstat <- NA
 	nobs <- purrr::map(summary_res, "df.null")
 	nobs <- (unlist(purrr::map(nobs, 1)) + 1) |> as.list()
@@ -135,6 +137,7 @@ plm_tidy <- function(
 	# extract plm statistics
 	summary_res <- purrr::map(plm_res, summary)
 	adj_r2 <- purrr::map(summary_res, "r.squared") |> purrr::map(2)
+	adj_r2 <- ifelse(adj_r2 < 0, 0, adj_r2)
 	fstat <- purrr::map(summary_res, "fstatistic") |> purrr::map("statistic")
 	nobs <- purrr::map(summary_res, "df")
 	nobs <- (unlist(purrr::map(nobs, 1)) + unlist(purrr::map(nobs, 2))) |> as.list() # approximation
