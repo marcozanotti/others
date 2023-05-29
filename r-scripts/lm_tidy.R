@@ -132,7 +132,7 @@ plm_tidy <- function(
 ) {
 	
 	# estimate plm model
-	plm_res <- purrr::map(formulas, plm, data = data, ...)
+	plm_res <- purrr::map(formulas, plm::plm, data = data, ...)
 	
 	# extract plm statistics
 	summary_res <- purrr::map(plm_res, summary)
@@ -214,10 +214,10 @@ cor_tidy <- function(
 # }
 
 # function to draw html table of lm results
-table_dt <- function(lm_res_tidy, title = "", caption = "", rownames = FALSE) {
+dt_table <- function(data, title = "", caption = "", rownames = FALSE) {
 	
-	p_len <- nrow(lm_res_tidy)
-	res <- lm_res_tidy |>
+	p_len <- nrow(data)
+	res <- data |>
 		DT::datatable(
 			extensions = "Buttons",
 			options = list(
